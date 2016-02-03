@@ -9,8 +9,7 @@ ENV TERM xterm
 ENV PERL_MM_USE_DEFAULT true
 
 RUN apt-get update && \
-    apt-get -y install procps && \
-    apt-get -y install libdbd-mysql libdbd-mysql-perl && \
+    apt-get -y install procps libdbd-mysql libdbd-mysql-perl && \
     rm -f /var/log/mysql/error.log && \
     ln -s /dev/stderr /var/log/mysql/error.log
 
