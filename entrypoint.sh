@@ -7,6 +7,7 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 if [ -n "$INIT_SQL" ]; then
+  echo "Writing $INIT_SQL..."
   # These statements _must_ be on individual lines, and _must_ end with
   # semicolons (no line breaks or comments are permitted).
   # TODO proper SQL escaping on ALL the things D:
@@ -40,6 +41,7 @@ if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
 	DATADIR="$(mysqld --verbose --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
 	
 	if [ ! -d "$DATADIR/mysql" ]; then
+    echo "Detected fresh install"
 		if [ -z "$MYSQL_ROOT_PASSWORD" -a -z "$MYSQL_ALLOW_EMPTY_PASSWORD" ]; then
 			echo >&2 'error: database is uninitialized and MYSQL_ROOT_PASSWORD not set'
 			echo >&2 '  Did you forget to add -e MYSQL_ROOT_PASSWORD=... ?'
@@ -47,10 +49,9 @@ if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
 		fi
 		
 		echo 'Running mysql_install_db ...'
-		mysql_install_db --datadir="$DATADIR"
+		time mysql_install_db --datadir="$DATADIR"
 		echo 'Finished mysql_install_db'
 		
-	
     if [ -f "$DATADIR/mysqldump.sql" ]; then
       # Start the database first in the background
       "$@" --skip-networking &
