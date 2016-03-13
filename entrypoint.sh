@@ -1,11 +1,38 @@
 #!/bin/bash
 set -e
-tempSqlFile='/tmp/mysql-first-time.sql'
 
-rm -f $tempSqlFile
 echo "ENTRYPOINT: $@"
 if [ "${1:0:1}" = '-' ]; then
 	set -- mysqld "$@"
+fi
+
+if [ -n "$INIT_SQL" ]; then
+  # These statements _must_ be on individual lines, and _must_ end with
+  # semicolons (no line breaks or comments are permitted).
+  # TODO proper SQL escaping on ALL the things D:
+
+  rm -f "$INIT_SQL"
+
+  # Basics
+  echo "DELETE FROM mysql.user;" >> "$INIT_SQL"
+  echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';" >> "$INIT_SQL"
+  echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION;" >> "$INIT_SQL"
+  echo "DROP DATABASE IF EXISTS test;" >> "$INIT_SQL"
+
+  if [ -n "$MYSQL_DATABASE" ]; then
+    echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;" >> "$INIT_SQL"
+  fi
+
+  if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
+    echo "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;" >> "$INIT_SQL"
+    
+    if [ "$MYSQL_DATABASE" ]; then
+      echo "GRANT ALL ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USER'@'%' ;" >> "$INIT_SQL"
+    fi
+  fi
+
+  echo 'FLUSH PRIVILEGES ;' >> "$INIT_SQL"
+	set -- "$@" --init-file="$INIT_SQL"
 fi
 
 if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
@@ -23,37 +50,7 @@ if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
 		mysql_install_db --datadir="$DATADIR"
 		echo 'Finished mysql_install_db'
 		
-		# These statements _must_ be on individual lines, and _must_ end with
-		# semicolons (no line breaks or comments are permitted).
-		# TODO proper SQL escaping on ALL the things D:
-		
-		tempSqlFile='/tmp/mysql-first-time.sql'
-
-    # Truncate file
-    :> "$tempSqlFile"
-
-    # Basics
-    echo "DELETE FROM mysql.user;" >> "$tempSqlFile"
-    echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';" >> "$tempSqlFile"
-    echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION;" >> "$tempSqlFile"
-    echo "DROP DATABASE IF EXISTS test;" >> "$tempSqlFile"
-
-		if [ -n "$MYSQL_DATABASE" ]; then
-			echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;" >> "$tempSqlFile"
-		fi
-		
-		if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
-			echo "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;" >> "$tempSqlFile"
-			
-			if [ "$MYSQL_DATABASE" ]; then
-				echo "GRANT ALL ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USER'@'%' ;" >> "$tempSqlFile"
-			fi
-		fi
-		
-		echo 'FLUSH PRIVILEGES ;' >> "$tempSqlFile"
-
-		set -- "$@" --init-file="$tempSqlFile"
-		
+	
     if [ -f "$DATADIR/mysqldump.sql" ]; then
       # Start the database first in the background
       "$@" --skip-networking &
@@ -69,14 +66,9 @@ if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
       time mysqladmin -u"root" -p"$MYSQL_ROOT_PASSWORD" shutdown
       wait $mysql_pid
     fi
-
-    # truncate init file so we don't leave passwords laying around
-    #:> $tempSqlFile
-
 	fi
-	
 	chown -R mysql:mysql "$DATADIR"
-
 fi
+
 echo "Starting mysql with '$@'"
 exec "$@"

@@ -8,6 +8,8 @@ ENV PATH "$PATH:/usr/local/bin"
 ENV TERM xterm
 ENV PERL_MM_USE_DEFAULT true
 
+ENV INIT_SQL /tmp/init.sql
+
 RUN apt-get update && \
     apt-get -y install procps libdbd-mysql libdbd-mysql-perl && \
     rm -f /var/log/mysql/error.log && \
