@@ -16,6 +16,7 @@ if [ -n "$INIT_SQL" ]; then
 
   # Basics
   echo "DELETE FROM mysql.user;" >> "$INIT_SQL"
+  echo 'FLUSH PRIVILEGES ;' >> "$INIT_SQL"
   echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';" >> "$INIT_SQL"
   echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION;" >> "$INIT_SQL"
   echo "DROP DATABASE IF EXISTS test;" >> "$INIT_SQL"
