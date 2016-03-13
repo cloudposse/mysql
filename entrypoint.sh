@@ -13,7 +13,7 @@ echo -n "Starting mysqld"
 until mysqladmin -u"root" ping &>/dev/null; do
   echo -n "."; sleep 0.2
 done
-/usr/bin/mysql_upgrade 
+/usr/bin/mysql_upgrade || true
 time mysqladmin -u"root" shutdown
 wait $mysql_pid
 
