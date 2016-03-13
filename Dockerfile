@@ -18,4 +18,4 @@ RUN apt-get update && \
 RUN chown -R mysql:mysql /var/lib/mysql/
 ADD entrypoint.sh /entrypoint.sh
 ADD my.cnf /etc/mysql/conf.d/
-CMD mysqld_safe
+CMD mysqld
