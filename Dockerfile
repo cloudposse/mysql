@@ -15,7 +15,6 @@ RUN apt-get update && \
     apt-get -y install procps libdbd-mysql libdbd-mysql-perl && \
     rm -f /var/log/mysql/error.log && \
     ln -s /dev/stderr /var/log/mysql/error.log && \
-    ln -s /usr/bin/mysqlcheck /usr/bin/mysqlrepair && \
     ln -s /usr/bin/mysqlcheck /usr/bin/mysqlanalyze && \
     ln -s /usr/bin/mysqlcheck /usr/bin/mysqloptimize && \
     ln -s /usr/bin/mysqlcheck /usr/bin/mysqlrepair 
