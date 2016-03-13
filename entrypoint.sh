@@ -6,6 +6,18 @@ if [ "${1:0:1}" = '-' ]; then
 	set -- mysqld "$@"
 fi
 
+echo "Attempting upgrade..."
+"$@" --skip-networking  --skip-grant-tables &
+mysql_pid=$!
+echo -n "Starting mysqld"
+until mysqladmin -u"root" ping &>/dev/null; do
+  echo -n "."; sleep 0.2
+done
+/usr/bin/mysql_upgrade 
+time mysqladmin -u"root" shutdown
+wait $mysql_pid
+
+
 if [ -n "$INIT_SQL" ]; then
   echo "Writing $INIT_SQL..."
   # These statements _must_ be on individual lines, and _must_ end with
@@ -50,7 +62,7 @@ if [ -n "$INIT_SQL" ]; then
 	set -- "$@" --init-file="$INIT_SQL"
 fi
 
-if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
+if [ "$1" = 'mysqld' ]; then
 	# read DATADIR from the MySQL config
 	DATADIR="$(mysqld --verbose --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
 	
