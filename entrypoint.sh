@@ -93,7 +93,7 @@ fi
 
 if [ -n "$MYSQL_CLIENT_CNF" ]; then
   echo "Writing $MYSQL_CLIENT_CNF"
-  printf "[client]\nuser=%s\npassword=%s\ndatabase=%s\n" "root" "$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" > "$MYSQL_CLIENT_CNF"
+  printf "[client]\nuser=%s\npassword=%s\n" "root" "$MYSQL_ROOT_PASSWORD" > "$MYSQL_CLIENT_CNF"
   chmod 600 "$MYSQL_CLIENT_CNF"
 fi
 
