@@ -57,9 +57,8 @@ if [ "$1" = 'mysqld_safe' ] || [ "$1" = 'mysqld' ]; then
 	if [ ! -d "$DATADIR/mysql" ]; then
     echo "Detected fresh install"
 		
-		echo 'Running mysql_install_db ...'
-		time mysql_install_db --datadir="$DATADIR"
-		echo 'Finished mysql_install_db'
+		echo 'Initializing db...'
+		time mysql --initialize-insecure --datadir="$DATADIR"
 		
     if [ -f "$DATADIR/mysqldump.sql" ]; then
       # Start the database first in the background

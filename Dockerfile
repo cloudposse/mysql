@@ -1,4 +1,4 @@
-FROM mysql:5.6
+FROM mysql:5.7
 MAINTAINER  Erik Osterman "e@osterman.com"
 
 # System ENV
