@@ -16,15 +16,20 @@ chown -R mysql:mysql "$DATADIR"
 if [ "$1" = 'mysqld' ]; then
 	
 	if [ -d "$DATADIR/mysql" ]; then
-    echo " * Detected existing install; attempting upgrade..."
+    echo " * Detected existing install"
     "$@" --skip-networking  --skip-grant-tables &
     mysql_pid=$!
     echo -n "Starting mysqld"
     until mysqladmin -u"root" ping &>/dev/null; do
       echo -n "."; sleep 0.2
     done
+    echo " * Attempting upgrade..."
     /usr/bin/mysql_upgrade || true
+
+    echo " * Attempting repair..."
     /usr/bin/mysqlrepair --all-databases
+
+    echo " * Shutting down..."
     time mysqladmin -u"root" shutdown
     wait $mysql_pid
   else
