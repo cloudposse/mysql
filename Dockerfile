@@ -19,7 +19,6 @@ RUN apt-get update && \
     ln -s /usr/bin/mysqlcheck /usr/bin/mysqloptimize && \
     ln -s /usr/bin/mysqlcheck /usr/bin/mysqlrepair 
 
-RUN chown -R mysql:mysql /var/lib/mysql/
 ADD entrypoint.sh /entrypoint.sh
 ADD my.cnf /etc/mysql/conf.d/
 CMD mysqld
