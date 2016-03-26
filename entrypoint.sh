@@ -47,18 +47,21 @@ if [ "$1" = 'mysqld' ]; then
     if [ -n "$MYSQL_DATABASE" ]; then
       echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;" >> "$MYSQL_BOOTSTRAP_SQL"
     fi
+
+    if [ -z "$MYSQL_DUMP" ]; then
+      if [ -f "$DATADIR/mysqldump.sql" ]; then
+        # Avoid: specified but the data directory has files in it. Aborting.
+        mv "$DATADIR/mysqldump.sql" /var/lib; 
+      fi
+
+      if [ -f "/var/lib/mysqldump.sql" ]; then
+        MYSQL_DUMP="/var/lib/mysqldump.sql";
+      fi
+    fi
 		
 		echo " * Initializing db in $DATADIR with $MYSQL_BOOTSTRAP_SQL..."
 		time mysqld --initialize-insecure --datadir="$DATADIR" --init-file="$MYSQL_BOOTSTRAP_SQL"
 	
-    if [ -z "$MYSQL_DUMP" ]; then
-      if [ -f "$DATADIR/mysqldump.sql" ]; then
-        MYSQL_DUMP="$DATADIR/mysqldump.sql";
-      elif [ -f "/var/lib/mysqldump.sql" ]; then
-        MYSQL_DUMP="/var/lib/mysqldump.sql";
-      fi
-    fi
-
     if [ -n "$MYSQL_DUMP" ]; then
       echo " * Importing $MYSQL_DUMP"
       # Start the database first in the background
