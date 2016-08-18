@@ -14,7 +14,23 @@ echo "ENTRYPOINT: $@"
 chown -R mysql:mysql "$DATADIR"
 
 if [ "$1" = 'mysqld' ]; then
-	
+
+  # Ensure db files are not locked (E.g. when running on NFS)
+  exit_code=0
+
+  for file in $(find $DATADIR -type f -name 'ib_*'); do
+    flock --exclusive --nonblock "$file" true
+    if [ $? -ne 0 ]; then
+      exit_code=$?
+      echo "File locked: $file"
+    fi
+  done
+
+  if [ $exit_code -ne 0 ]; then
+    echo "Aborting"
+    exit $exit_code	
+  fi
+
 	if [ -d "$DATADIR/mysql" ]; then
     echo " * Detected existing install"
     "$@" --skip-networking  --skip-grant-tables &
