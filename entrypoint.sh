@@ -18,7 +18,7 @@ if [ "$1" = 'mysqld' ]; then
   # Ensure db files are not locked (E.g. when running on NFS)
   exit_code=0
   set +e
-  for file in $(find $DATADIR -type f -name 'ib_*'); do
+  for file in $(find $DATADIR -type f); do
     flock --exclusive --nonblock "$file" true
     if [ $? -ne 0 ]; then
       echo "File locked: $file"
