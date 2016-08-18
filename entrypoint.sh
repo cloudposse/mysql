@@ -21,8 +21,8 @@ if [ "$1" = 'mysqld' ]; then
   for file in $(find $DATADIR -type f -name 'ib_*'); do
     flock --exclusive --nonblock "$file" true
     if [ $? -ne 0 ]; then
-      exit_code=$?
       echo "File locked: $file"
+      exit_code=1
     fi
   done
   set -e
