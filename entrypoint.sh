@@ -23,7 +23,7 @@ if [ "$1" = 'mysqld' ]; then
     flock --exclusive --nonblock "$file" true
     if [ $? -ne 0 ]; then
       if [ "${MYSQL_FORCE_UNLOCK}" == "true" ]; then
-        cp -a "$file" "$file.unlocked" && \
+        cp --preserve=owner,timestamp "$file" "$file.unlocked" && \
           rm -f "$file" && \
           mv "$file.unlocked" "$file" && \
           echo "File forcely unlocked: $file"
