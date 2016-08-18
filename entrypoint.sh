@@ -46,6 +46,7 @@ if [ "$1" = 'mysqld' ]; then
     mysql_pid=$!
     echo -n "Starting mysqld"
     until mysqladmin -u"root" ping &>/dev/null; do
+      ps -p $mysql_pid >/dev/null || (echo "Mysql server has died"; exit 1)
       echo -n "."; sleep 0.2
     done
     echo " * Attempting upgrade..."
@@ -95,6 +96,7 @@ if [ "$1" = 'mysqld' ]; then
       echo -n "Starting mysqld"
       until mysqladmin -u"root" ping &>/dev/null; do
         echo -n "."; sleep 0.2
+        ps -p $mysql_pid >/dev/null || (echo "Mysql server has died"; exit 1)
       done
       echo
       echo "Populating db $MYSQL_DATABASE from $MYSQL_DUMP"
