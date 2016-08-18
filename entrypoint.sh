@@ -2,6 +2,7 @@
 set -e
 
 MYSQL_BOOTSTRAP_SQL="/tmp/bootstrap.sql"
+MYSQL_FORCE_UNLOCK="true"
 
 # read DATADIR from the MySQL config
 DATADIR="$(mysqld --verbose --help 2>/dev/null | awk '$1 == "datadir" { print $2; exit }')"
@@ -21,8 +22,15 @@ if [ "$1" = 'mysqld' ]; then
   for file in $(find $DATADIR -type f); do
     flock --exclusive --nonblock "$file" true
     if [ $? -ne 0 ]; then
-      echo "File locked: $file"
-      exit_code=1
+      if [ "${MYSQL_FORCE_UNLOCK}" == "true" ]; then
+        cp -a "$file" "$file.unlocked" && \
+          rm -f "$file" && \
+          mv "$file.unlocked" "$file" && \
+          echo "File forcely unlocked: $file"
+      else
+        echo "File locked: $file"
+        exit_code=1
+      fi
     fi
   done
   set -e
